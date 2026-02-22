@@ -47,9 +47,35 @@ export const lessons: Lesson[] = [
       { question: 'Tiếng nào có âm b?', options: ['ca', 'bà', 'cà'], correctAnswer: 1 }
     ]
   },
-  { id: '4', title: 'Bài 4: e, ê', type: 'vowel', content: 'e, ê', passage: ['bé, bè, bê, bế', 'be bé, bề bề, bế bé, bè bè', '- Cá be bé.', '- Bà bế bé'], examples: ['bé', 'bè', 'bê', 'bế', 'be bé', 'bề bề', 'bế bé', 'bè bè'], book: 1, exercise: { type: 'word-builder', data: { word: 'bế bé', parts: ['bế', ' ', 'bé'] } } },
+  { 
+    id: '4', 
+    title: 'Bài 4: e, ê', 
+    type: 'vowel', 
+    content: 'e, ê', 
+    passage: ['bé, bè, bê, bế', 'be bé, bề bề, bế bé, bè bè', '- Cá be bé.', '- Bà bế bé'], 
+    examples: ['bé', 'bè', 'bê', 'bế', 'be bé', 'bề bề', 'bế bé', 'bè bè'], 
+    book: 1, 
+    exercise: { type: 'word-builder', data: { word: 'bế bé', parts: ['bế', ' ', 'bé'] } },
+    quiz: [
+      { question: 'Tiếng nào có âm e?', options: ['bè', 'ba', 'bô'], correctAnswer: 0 },
+      { question: 'Tiếng nào có âm ê?', options: ['ca', 'bê', 'cà'], correctAnswer: 1 }
+    ]
+  },
   { id: '5', title: 'Bài 5: Ôn tập', type: 'reading', content: 'Ôn tập', passage: ['ba bé, bà bè, bè cá', '- Bè be bé.', '- Bé bê ca.'], examples: ['ba bé', 'bà bè', 'bè cá'], book: 1 },
-  { id: '6', title: 'Bài 6, Bài 7: o, ô, ?, .', type: 'vowel', content: 'o, ô, ?, .', passage: ['cô, cố, cò, bố, bò, bổ, bộ', 'bó cỏ, cổ cò, bò bê', '- Cô có cá, có cả cà', '- Bà bế bé, cô Ba bó cỏ.'], examples: ['cô', 'cố', 'cò', 'bố', 'bò', 'bổ', 'bộ', 'bó cỏ', 'cổ cò', 'bò bê'], book: 1, exercise: { type: 'fill-blank', data: { image: 'https://img.freepik.com/free-vector/cute-cow-cartoon-character_1308-135667.jpg', word: 'b_', missing: 'o' } } },
+  { 
+    id: '6', 
+    title: 'Bài 6, Bài 7: o, ô, ?, .', 
+    type: 'vowel', 
+    content: 'o, ô, ?, .', 
+    passage: ['cô, cố, cò, bố, bò, bổ, bộ', 'bó cỏ, cổ cò, bò bê', '- Cô có cá, có cả cà', '- Bà bế bé, cô Ba bó cỏ.'], 
+    examples: ['cô', 'cố', 'cò', 'bố', 'bò', 'bổ', 'bộ', 'bó cỏ', 'cổ cò', 'bò bê'], 
+    book: 1, 
+    exercise: { type: 'fill-blank', data: { image: 'https://img.freepik.com/free-vector/cute-cow-cartoon-character_1308-135667.jpg', word: 'b_', missing: 'o' } },
+    quiz: [
+      { question: 'Tiếng nào có âm ô?', options: ['cò', 'cô', 'ca'], correctAnswer: 1 },
+      { question: 'Dấu hỏi là dấu gì?', options: ['?', '.', '~'], correctAnswer: 0 }
+    ]
+  },
   { id: '8', title: 'Bài 8: d, đ', type: 'vowel', content: 'd, đ', passage: ['da, dạ, dế, đa, đá, đỏ, đò, đố', 'ca đá, đa đa, da dẻ, da cá', '- Cô có ca đá. - Bố đố bé'], examples: ['da', 'dạ', 'dế', 'đa', 'đá', 'đỏ', 'đò', 'đố', 'ca đá', 'đa đa', 'da dẻ', 'da cá'], book: 1 },
   { id: '9', title: 'Bài 9: ơ, dấu ngã', type: 'vowel', content: 'ơ, ~', passage: ['cờ, bơ, đỡ, cỡ, dỡ, cỗ, đỗ, bờ', 'bờ cỏ, cờ đỏ, cá cờ', '- Bé có cờ đỏ. - Bò, bê ở bờ đê.'], examples: ['cờ', 'bơ', 'đỡ', 'cỡ', 'dỡ', 'cỗ', 'đỗ', 'bờ', 'bờ cỏ', 'cờ đỏ', 'cá cờ'], book: 1 },
   { id: '10', title: 'Bài 10: Ôn tập', type: 'reading', content: 'Ôn tập', passage: ['Ô đỏ, đo đỏ, đỗ đỏ, dỗ bé.', '- Ở bờ đê có dế.', '- Bé có bộ đồ đỏ, ô đỏ.'], examples: ['Ô đỏ', 'đo đỏ', 'đỗ đỏ', 'dỗ bé'], book: 1 },
