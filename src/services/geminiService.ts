@@ -9,7 +9,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 const HARDCODED_KEY = ""; // Nếu file .env không hoạt động, bạn có thể dán trực tiếp API Key vào trong dấu ngoặc kép này.
 export const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof process !== "undefined" ? process.env.REACT_APP_GEMINI_API_KEY : undefined) || HARDCODED_KEY;
 
-export const getGeminiModel = (modelName: string = "gemini-2.0-flash-exp") => {
+export const getGeminiModel = (modelName: string = "gemini-1.5-flash-latest") => {
   if (!apiKey || apiKey.includes("DAN_KEY_CUA_BAN_VAO_DAY")) {
     console.warn("GEMINI_API_KEY chưa được cấu hình đúng.");
     return null;
@@ -19,7 +19,7 @@ export const getGeminiModel = (modelName: string = "gemini-2.0-flash-exp") => {
 };
 
 export const analyzeReading = async (audioBase64: string, expectedText: string) => {
-  const ai = getGeminiModel("gemini-2.0-flash-exp");
+  const ai = getGeminiModel("gemini-1.5-flash-latest");
   
   if (!ai) {
     return { 
@@ -31,7 +31,7 @@ export const analyzeReading = async (audioBase64: string, expectedText: string) 
   
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-1.5-flash-latest",
       contents: [
         {
           parts: [
@@ -63,12 +63,12 @@ export const analyzeReading = async (audioBase64: string, expectedText: string) 
 };
 
 export const getQuickHelp = async (question: string) => {
-  const ai = getGeminiModel("gemini-2.0-flash-exp");
+  const ai = getGeminiModel("gemini-1.5-flash-latest");
   if (!ai) return "Chưa cấu hình API Key.";
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: "gemini-1.5-flash-latest",
       contents: question,
       config: {
         systemInstruction: "Bạn là một giáo viên tiểu học vui vẻ, chuyên dạy lớp 1. Hãy trả lời các câu hỏi của học sinh hoặc phụ huynh một cách ngắn gọn, dễ hiểu và tràn đầy năng lượng.",
