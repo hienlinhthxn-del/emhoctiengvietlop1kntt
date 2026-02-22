@@ -7,9 +7,9 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 // Sử dụng key dự phòng nếu không tìm thấy biến môi trường
 const HARDCODED_KEY = "AIzaSyD-T0nnnmirXF2mUgbaALp6IDIg5gJbgu8";
-export const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (typeof process !== "undefined" ? process.env.REACT_APP_GEMINI_API_KEY : undefined) || HARDCODED_KEY;
+export const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof process !== "undefined" ? process.env.REACT_APP_GEMINI_API_KEY : undefined) || HARDCODED_KEY;
 
-export const getGeminiModel = (modelName: string = "gemini-3-flash-preview") => {
+export const getGeminiModel = (modelName: string = "gemini-2.0-flash-exp") => {
   if (!apiKey) {
     console.warn("GEMINI_API_KEY is not set. AI features will be disabled.");
     return null;
@@ -19,7 +19,7 @@ export const getGeminiModel = (modelName: string = "gemini-3-flash-preview") => 
 };
 
 export const analyzeReading = async (audioBase64: string, expectedText: string) => {
-  const ai = getGeminiModel("gemini-3-flash-preview");
+  const ai = getGeminiModel("gemini-2.0-flash-exp");
   
   if (!ai) {
     return { 
@@ -31,7 +31,7 @@ export const analyzeReading = async (audioBase64: string, expectedText: string) 
   
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash-exp",
       contents: [
         {
           parts: [
@@ -63,12 +63,12 @@ export const analyzeReading = async (audioBase64: string, expectedText: string) 
 };
 
 export const getQuickHelp = async (question: string) => {
-  const ai = getGeminiModel("gemini-2.5-flash-lite-latest");
+  const ai = getGeminiModel("gemini-2.0-flash-exp");
   if (!ai) return "Chưa cấu hình API Key.";
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite-latest",
+      model: "gemini-2.0-flash-exp",
       contents: question,
       config: {
         systemInstruction: "Bạn là một giáo viên tiểu học vui vẻ, chuyên dạy lớp 1. Hãy trả lời các câu hỏi của học sinh hoặc phụ huynh một cách ngắn gọn, dễ hiểu và tràn đầy năng lượng.",
