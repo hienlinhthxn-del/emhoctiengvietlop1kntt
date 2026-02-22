@@ -9,7 +9,7 @@ export async function generateSpeech(text: string): Promise<string> {
 
     const ai = new GoogleGenAI({ apiKey: apiKey });
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-2.0-flash",
       contents: [{ parts: [{ text: `Đọc to và rõ ràng: ${text}` }] }],
       config: {
         responseModalities: [Modality.AUDIO],
