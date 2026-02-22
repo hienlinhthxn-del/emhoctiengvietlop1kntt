@@ -24,10 +24,32 @@ export interface Lesson {
 
 export const lessons: Lesson[] = [
   // TẬP 1: 83 BÀI
-  { id: '1', title: 'Bài 1 đến bài 3: a, b, c', type: 'vowel', content: 'a, b, c', passage: ['ba, bà, bá, ca, cá, cà', 'bà ba, ba bà, ca ba, ba ba', '- A, ba ba!'], examples: ['ba', 'bà', 'bá', 'ca', 'cá', 'cà', 'bà ba', 'ba bà', 'ca ba', 'ba ba'], book: 1 },
-  { id: '4', title: 'Bài 4: e, ê', type: 'vowel', content: 'e, ê', passage: ['bé, bè, bê, bế', 'be bé, bề bề, bế bé, bè bè', '- Cá be bé.', '- Bà bế bé'], examples: ['bé', 'bè', 'bê', 'bế', 'be bé', 'bề bề', 'bế bé', 'bè bè'], book: 1 },
+  { 
+    id: '1', 
+    title: 'Bài 1 đến bài 3: a, b, c', 
+    type: 'vowel', 
+    content: 'a, b, c', 
+    passage: ['ba, bà, bá, ca, cá, cà', 'bà ba, ba bà, ca ba, ba ba', '- A, ba ba!'], 
+    examples: ['ba', 'bà', 'bá', 'ca', 'cá', 'cà', 'bà ba', 'ba bà', 'ca ba', 'ba ba'], 
+    book: 1,
+    exercise: {
+      type: 'matching',
+      data: {
+        pairs: [
+          { left: 'con cá', right: 'bơi lội' },
+          { left: 'bà', right: 'bế bé' },
+          { left: 'ba', right: 'lái xe' }
+        ]
+      }
+    },
+    quiz: [
+      { question: 'Tiếng nào có âm a?', options: ['bê', 'ba', 'bô'], correctAnswer: 1 },
+      { question: 'Tiếng nào có âm b?', options: ['ca', 'bà', 'cà'], correctAnswer: 1 }
+    ]
+  },
+  { id: '4', title: 'Bài 4: e, ê', type: 'vowel', content: 'e, ê', passage: ['bé, bè, bê, bế', 'be bé, bề bề, bế bé, bè bè', '- Cá be bé.', '- Bà bế bé'], examples: ['bé', 'bè', 'bê', 'bế', 'be bé', 'bề bề', 'bế bé', 'bè bè'], book: 1, exercise: { type: 'word-builder', data: { word: 'bế bé', parts: ['bế', ' ', 'bé'] } } },
   { id: '5', title: 'Bài 5: Ôn tập', type: 'reading', content: 'Ôn tập', passage: ['ba bé, bà bè, bè cá', '- Bè be bé.', '- Bé bê ca.'], examples: ['ba bé', 'bà bè', 'bè cá'], book: 1 },
-  { id: '6', title: 'Bài 6, Bài 7: o, ô, ?, .', type: 'vowel', content: 'o, ô, ?, .', passage: ['cô, cố, cò, bố, bò, bổ, bộ', 'bó cỏ, cổ cò, bò bê', '- Cô có cá, có cả cà', '- Bà bế bé, cô Ba bó cỏ.'], examples: ['cô', 'cố', 'cò', 'bố', 'bò', 'bổ', 'bộ', 'bó cỏ', 'cổ cò', 'bò bê'], book: 1 },
+  { id: '6', title: 'Bài 6, Bài 7: o, ô, ?, .', type: 'vowel', content: 'o, ô, ?, .', passage: ['cô, cố, cò, bố, bò, bổ, bộ', 'bó cỏ, cổ cò, bò bê', '- Cô có cá, có cả cà', '- Bà bế bé, cô Ba bó cỏ.'], examples: ['cô', 'cố', 'cò', 'bố', 'bò', 'bổ', 'bộ', 'bó cỏ', 'cổ cò', 'bò bê'], book: 1, exercise: { type: 'fill-blank', data: { image: 'https://img.freepik.com/free-vector/cute-cow-cartoon-character_1308-135667.jpg', word: 'b_', missing: 'o' } } },
   { id: '8', title: 'Bài 8: d, đ', type: 'vowel', content: 'd, đ', passage: ['da, dạ, dế, đa, đá, đỏ, đò, đố', 'ca đá, đa đa, da dẻ, da cá', '- Cô có ca đá. - Bố đố bé'], examples: ['da', 'dạ', 'dế', 'đa', 'đá', 'đỏ', 'đò', 'đố', 'ca đá', 'đa đa', 'da dẻ', 'da cá'], book: 1 },
   { id: '9', title: 'Bài 9: ơ, dấu ngã', type: 'vowel', content: 'ơ, ~', passage: ['cờ, bơ, đỡ, cỡ, dỡ, cỗ, đỗ, bờ', 'bờ cỏ, cờ đỏ, cá cờ', '- Bé có cờ đỏ. - Bò, bê ở bờ đê.'], examples: ['cờ', 'bơ', 'đỡ', 'cỡ', 'dỡ', 'cỗ', 'đỗ', 'bờ', 'bờ cỏ', 'cờ đỏ', 'cá cờ'], book: 1 },
   { id: '10', title: 'Bài 10: Ôn tập', type: 'reading', content: 'Ôn tập', passage: ['Ô đỏ, đo đỏ, đỗ đỏ, dỗ bé.', '- Ở bờ đê có dế.', '- Bé có bộ đồ đỏ, ô đỏ.'], examples: ['Ô đỏ', 'đo đỏ', 'đỗ đỏ', 'dỗ bé'], book: 1 },
