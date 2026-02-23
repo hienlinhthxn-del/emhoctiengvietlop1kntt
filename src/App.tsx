@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, GraduationCap, Layout, ChevronRight, Star, Home, CheckCircle2, Trophy, Users, Baby, Lock, ArrowLeft, BarChart3, Settings, Plus, Trash2, Check, Sparkles, Bell, Calendar } from 'lucide-react';
+import { BookOpen, GraduationCap, Layout, ChevronRight, Star, Home, CheckCircle2, Trophy, Users, Baby, Lock, ArrowLeft, BarChart3, Settings, Plus, Trash2, Check, Sparkles, Bell, Calendar, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { lessons, Lesson } from './data/lessons';
 import { QuizComponent } from './components/QuizComponent';
@@ -376,13 +376,14 @@ interface LessonContentProps {
   aiFeedback: any;
   completeLesson: (id: string, score?: number, part?: string, index?: number) => void;
   role: Role;
-  assignLesson: (id: string) => void;
+  assignLesson: (id: string, message?: string, dueDate?: string) => void;
   assignments: Assignment[];
 }
 
 function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesson, role, assignLesson, assignments }: LessonContentProps) {
   const isTeacher = role === 'teacher';
   const isAssigned = assignments.some(a => a.lessonId === lesson.id);
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
   return (
     <motion.div key={lesson.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-orange-50 min-h-[70vh] flex flex-col">
@@ -496,7 +497,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
               <h4 className="font-bold text-slate-900">Giao bài tập này</h4>
               <p className="text-sm text-slate-500">Học sinh và phụ huynh sẽ nhận được thông báo.</p>
             </div>
-            <button onClick={() => assignLesson(lesson.id)} disabled={isAssigned} className={cn("px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all", isAssigned ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200")}>{isAssigned ? <Check size={20} /> : <Bell size={20} />} {isAssigned ? "Đã giao" : "Giao bài về nhà"}</button>
+            <button onClick={() => setShowAssignModal(true)} disabled={isAssigned} className={cn("px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all", isAssigned ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200")}>{isAssigned ? <Check size={20} /> : <Bell size={20} />} {isAssigned ? "Đã giao" : "Giao bài về nhà"}</button>
           </div>
         )}
 
@@ -541,6 +542,18 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
         />
         {aiFeedback && <FeedbackBox feedback={aiFeedback} />}
       </div>
+
+      <AnimatePresence>
+        {showAssignModal && (
+          <AssignmentModal 
+            onClose={() => setShowAssignModal(false)}
+            onConfirm={(msg, date) => {
+              assignLesson(lesson.id, msg, date);
+              setShowAssignModal(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -811,6 +824,38 @@ function TeacherDashboard({ progress }: { progress: ProgressData }) {
 
 function ParentDashboard({ progress }: { progress: ProgressData }) {
   const { assignments } = useAssignments();
+  
+  // Tính toán dữ liệu cho biểu đồ tuần
+  const getWeeklyStats = () => {
+    const stats = [];
+    const now = new Date();
+    const dates = progress.completionDates || {};
+    
+    // Lấy ngày thứ 2 của tuần hiện tại
+    const currentDay = now.getDay() || 7; // CN là 0 -> đổi thành 7
+    const monday = new Date(now);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(now.getDate() - currentDay + 1);
+
+    // Tạo dữ liệu cho 4 tuần gần nhất (từ quá khứ đến hiện tại)
+    for (let i = 3; i >= 0; i--) {
+      const weekStart = new Date(monday);
+      weekStart.setDate(monday.getDate() - (i * 7));
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      const count = Object.values(dates).filter(dateStr => {
+        const d = new Date(dateStr);
+        return d >= weekStart && d <= weekEnd;
+      }).length;
+
+      let label = i === 0 ? "Tuần này" : i === 1 ? "Tuần trước" : `${weekStart.getDate()}/${weekStart.getMonth() + 1}`;
+      stats.push({ label, count });
+    }
+    return stats;
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
@@ -818,6 +863,8 @@ function ParentDashboard({ progress }: { progress: ProgressData }) {
       <ProgressDashboard progress={progress} />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <WeeklyProgressChart data={getWeeklyStats()} />
+
         <div className="bg-white p-8 rounded-[2.5rem] border border-red-50 shadow-sm">
           <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Bell className="text-red-500" /> Bài tập giáo viên giao</h3>
           <div className="space-y-3">
@@ -828,12 +875,14 @@ function ParentDashboard({ progress }: { progress: ProgressData }) {
                 const lesson = lessons.find(l => l.id === a.lessonId);
                 const isCompleted = progress.completedLessons.includes(a.lessonId);
                 return (
-                  <div key={a.id} className={cn("p-4 rounded-2xl border flex items-center justify-between", isCompleted ? "bg-green-50 border-green-100" : "bg-white border-red-100")}>
+                  <div key={a.id} className={cn("p-4 rounded-2xl border flex items-start justify-between gap-4", isCompleted ? "bg-green-50 border-green-100" : "bg-white border-red-100")}>
                     <div>
                       <div className="font-bold text-slate-900">{lesson?.title}</div>
                       <div className="text-xs text-slate-500 flex items-center gap-1"><Calendar size={12}/> {new Date(a.timestamp).toLocaleDateString('vi-VN')}</div>
+                      <div className="text-sm text-slate-700 mt-2 italic bg-white/50 p-2 rounded-lg border border-slate-100">"{a.message}"</div>
+                      {a.dueDate && <div className="text-xs text-red-500 font-bold mt-2 flex items-center gap-1"><Calendar size={12}/> Hạn nộp: {new Date(a.dueDate).toLocaleDateString('vi-VN')}</div>}
                     </div>
-                    <div className={cn("px-3 py-1 rounded-full text-xs font-bold", isCompleted ? "bg-green-200 text-green-800" : "bg-red-100 text-red-600")}>
+                    <div className={cn("px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap", isCompleted ? "bg-green-200 text-green-800" : "bg-red-100 text-red-600")}>
                       {isCompleted ? "Đã xong" : "Chưa làm"}
                     </div>
                   </div>
@@ -861,6 +910,80 @@ function ParentDashboard({ progress }: { progress: ProgressData }) {
       </div>
     </motion.div>
   );
+}
+
+function WeeklyProgressChart({ data }: { data: { label: string; count: number }[] }) {
+  const max = Math.max(...data.map(d => d.count), 5); // Ít nhất là 5 để cột không quá cao khi ít dữ liệu
+
+  return (
+    <div className="bg-white p-8 rounded-[2.5rem] border border-indigo-50 shadow-sm flex flex-col">
+      <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+        <BarChart3 className="text-indigo-500" /> Biểu đồ học tập
+      </h3>
+      <div className="flex-1 flex items-end justify-between gap-4 min-h-[200px] pt-8 px-2">
+        {data.map((item, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-3 group h-full justify-end">
+            <div className="relative w-full flex justify-center items-end h-full bg-indigo-50/30 rounded-2xl overflow-hidden">
+               <motion.div 
+                 initial={{ height: 0 }}
+                 animate={{ height: `${(item.count / max) * 100}%` }}
+                 className="w-full max-w-[40px] bg-indigo-500 rounded-t-xl relative group-hover:bg-indigo-600 transition-colors min-h-[4px]"
+               >
+                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                   {item.count} bài
+                 </div>
+               </motion.div>
+            </div>
+            <div className="text-xs font-bold text-slate-400 text-center whitespace-nowrap">{item.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AssignmentModal({ onClose, onConfirm }: { onClose: () => void, onConfirm: (msg: string, date: string) => void }) {
+  const [message, setMessage] = useState("Hoàn thành bài học này và luyện đọc thật to nhé!");
+  const [dueDate, setDueDate] = useState("");
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl border border-white/20">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-black text-slate-900">Giao bài tập về nhà</h3>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={20} /></button>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Lời nhắn của giáo viên</label>
+            <textarea 
+              value={message} 
+              onChange={e => setMessage(e.target.value)}
+              className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-700 resize-none"
+              rows={3}
+              placeholder="Nhập lời nhắn..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hạn nộp bài (Tùy chọn)</label>
+            <input 
+              type="date" 
+              value={dueDate}
+              onChange={e => setDueDate(e.target.value)}
+              className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button onClick={onClose} className="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">Hủy</button>
+            <button onClick={() => onConfirm(message, dueDate)} className="flex-1 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">Giao bài ngay</button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
 }
 
 function StatCard({ icon, value, label, color }: any) {

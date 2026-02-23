@@ -23,6 +23,7 @@ export interface ProgressData {
   points: number;
   badges: Badge[];
   username: string;
+  completionDates?: Record<string, string>;
 }
 
 export interface Assignment {
@@ -30,6 +31,7 @@ export interface Assignment {
   lessonId: string;
   timestamp: string;
   message: string;
+  dueDate?: string;
 }
 
 export interface UserProfile {
@@ -90,7 +92,8 @@ export const useProgress = () => {
       lastActivity: new Date().toISOString(),
       points: 0,
       badges: INITIAL_BADGES,
-      username: user ? user.name : 'Bé yêu'
+      username: user ? user.name : 'Bé yêu',
+      completionDates: {}
     };
   };
 
@@ -171,6 +174,7 @@ export const useProgress = () => {
       
       const newScores = { ...prev.scores };
       const newDetailed = { ...prev.detailedScores };
+      const newCompletionDates = { ...(prev.completionDates || {}) };
       
       if (!newDetailed[lessonId]) {
         newDetailed[lessonId] = {};
@@ -178,6 +182,10 @@ export const useProgress = () => {
 
       let pointsEarned = 0;
       if (isNewLesson) pointsEarned += 100;
+
+      if (isNewLesson) {
+        newCompletionDates[lessonId] = new Date().toISOString();
+      }
 
       if (score !== undefined) {
         if (part === 'main') {
@@ -232,7 +240,8 @@ export const useProgress = () => {
         detailedScores: newDetailed,
         points: prev.points + pointsEarned,
         badges: newBadges,
-        lastActivity: new Date().toISOString()
+        lastActivity: new Date().toISOString(),
+        completionDates: newCompletionDates
       };
     });
   };
@@ -253,12 +262,13 @@ export const useAssignments = () => {
     } catch (e) { return []; }
   });
 
-  const assignLesson = (lessonId: string, message: string = "Bài tập về nhà") => {
+  const assignLesson = (lessonId: string, message: string = "Bài tập về nhà", dueDate?: string) => {
     const newAssignment: Assignment = {
       id: Date.now().toString(),
       lessonId,
       timestamp: new Date().toISOString(),
-      message
+      message,
+      dueDate
     };
     
     // Kiểm tra xem bài này đã được giao chưa để tránh trùng lặp
