@@ -596,18 +596,23 @@ function WelcomeBox() {
 function TeacherDashboard({ progress }: { progress: ProgressData }) {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
-  // Mock data for 29 students
-  const students = Array.from({ length: 29 }, (_, i) => ({
+  const studentList = [
+    "Hà Tâm An", "Vũ Ngọc Khánh An", "Hoàng Diệu Anh", "Quàng Tuấn Anh", "Lê Bảo Châu",
+    "Trịnh Công Dũng", "Bùi Nhật Duy", "Nguyễn Nhật Duy", "Nguyễn Phạm Linh Đan", "Nguyễn Ngọc Bảo Hân",
+    "Mào Trung Hiếu", "Nguyễn Bá Gia Hưng", "Vừ Gia Hưng", "Vừ Thị Ngọc Linh", "Đỗ Phan Duy Long",
+    "Vừ Thành Long", "Vừ Bảo Ly", "Quàng Thị Quốc Mai", "Vừ Công Minh", "Phạm Bảo Ngọc",
+    "Lò Thảo Nguyên", "Trình Chân Nguyên", "Lò Đức Phong", "Thào Thị Thảo", "Tạ Anh Thư",
+    "Lò Minh Tiến", "Chang Trí Tuệ", "Cà Phương Uyên", "Bùi Uyển Vy"
+  ];
+
+  // Mock data for students
+  const students = studentList.map((name, i) => ({
     id: `student-${i + 1}`,
-    name: i === 0 ? 'Nguyễn Văn A (Bạn)' : `Học sinh ${i + 1}`,
-    completedCount: i === 0 ? progress.completedLessons.length : Math.floor(Math.random() * 10),
-    avgScore: i === 0 
-      ? (progress.completedLessons.length > 0 
-          ? Math.round((Object.values(progress.scores) as number[]).reduce((a: number, b: number) => a + b, 0) / progress.completedLessons.length) 
-          : 0)
-      : Math.floor(Math.random() * 40) + 60,
-    lastActive: i === 0 ? new Date(progress.lastActivity).toLocaleDateString('vi-VN') : '21/02/2026',
-    progress: i === 0 ? progress : null // Only show real progress for the first student (demo)
+    name: name,
+    completedCount: Math.floor(Math.random() * 15),
+    avgScore: Math.floor(Math.random() * 30) + 70,
+    lastActive: new Date(Date.now() - Math.floor(Math.random() * 5 * 24 * 60 * 60 * 1000)).toLocaleDateString('vi-VN'),
+    progress: null
   }));
 
   if (selectedStudent) {
@@ -730,7 +735,7 @@ function TeacherDashboard({ progress }: { progress: ProgressData }) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard icon={<Users size={24} />} value="29" label="Học sinh" color="emerald" />
+        <StatCard icon={<Users size={24} />} value={students.length.toString()} label="Học sinh" color="emerald" />
         <StatCard icon={<BarChart3 size={24} />} value="72%" label="Tỷ lệ hoàn thành lớp" color="blue" />
         <StatCard icon={<Settings size={24} />} value={lessons.length.toString()} label="Tổng số bài học" color="purple" />
       </div>
@@ -738,7 +743,7 @@ function TeacherDashboard({ progress }: { progress: ProgressData }) {
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-slate-900">Bảng tổng hợp lớp 1A</h2>
-          <div className="text-sm font-bold text-slate-400">Sĩ số: 29 học sinh</div>
+          <div className="text-sm font-bold text-slate-400">Sĩ số: {students.length} học sinh</div>
         </div>
         
         <div className="overflow-x-auto">
