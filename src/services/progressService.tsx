@@ -165,6 +165,19 @@ export const useProgress = () => {
     }
   };
 
+  const addBulkUsers = (names: string[]) => {
+    let newIdCounter = Date.now();
+    const newUsersToAdd = names
+      .map(name => name.trim().replace(/["\r]/g, ''))
+      .filter(name => name && !users.some(u => u.name.toLowerCase() === name.toLowerCase()))
+      .map(name => ({ id: (newIdCounter++).toString(), name }));
+
+    if (newUsersToAdd.length > 0) {
+      setUsers(prevUsers => [...prevUsers, ...newUsersToAdd]);
+    }
+    return newUsersToAdd.length;
+  };
+
   const completeLesson = (lessonId: string, score?: number, part?: string, partIndex?: number) => {
     setProgress(prev => {
       const isNewLesson = !prev.completedLessons.includes(lessonId);
@@ -251,7 +264,7 @@ export const useProgress = () => {
     setUsers(prev => prev.map(u => u.id === currentUserId ? { ...u, name } : u));
   };
 
-  return { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser };
+  return { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser, addBulkUsers };
 };
 
 export const useAssignments = () => {

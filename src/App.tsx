@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, GraduationCap, Layout, ChevronRight, Star, Home, CheckCircle2, Trophy, Users, Baby, Lock, ArrowLeft, BarChart3, Settings, Plus, Trash2, Check, Sparkles, Bell, Calendar, X, Download } from 'lucide-react';
+import { BookOpen, GraduationCap, Layout, ChevronRight, Star, Home, CheckCircle2, Trophy, Users, Baby, Lock, ArrowLeft, BarChart3, Settings, Plus, Trash2, Check, Sparkles, Bell, Calendar, X, Download, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { lessons, Lesson } from './data/lessons';
 import { QuizComponent } from './components/QuizComponent';
@@ -24,7 +24,7 @@ export default function App() {
   const [teacherView, setTeacherView] = useState<'lessons' | 'dashboard'>('lessons');
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiFeedback, setAiFeedback] = useState<{ transcription: string; feedback: string; accuracy: number } | null>(null);
-  const { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser } = useProgress();
+  const { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser, addBulkUsers } = useProgress();
   const [showSettings, setShowSettings] = useState(false);
   const [newUsername, setNewUsername] = useState(progress.username);
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -324,7 +324,7 @@ export default function App() {
                   </AnimatePresence>
                 </div>
               </div>
-            ) : <TeacherDashboard progress={progress} users={users} />}
+            ) : <TeacherDashboard progress={progress} users={users} addBulkUsers={addBulkUsers} />}
           </>
         )}
         {role === 'parent' && <ParentDashboard progress={progress} />}
@@ -608,17 +608,28 @@ function WelcomeBox() {
   );
 }
 
-function TeacherDashboard({ progress, users }: { progress: ProgressData, users: UserProfile[] }) {
+function TeacherDashboard({ progress, users, addBulkUsers }: { progress: ProgressData, users: UserProfile[], addBulkUsers: (names: string[]) => number }) {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [selectedClass, setSelectedClass] = useState('1A3');
 
-  const studentList = [
-    "Hà Tâm An", "Vũ Ngọc Khánh An", "Hoàng Diệu Anh", "Quàng Tuấn Anh", "Lê Bảo Châu",
-    "Trịnh Công Dũng", "Bùi Nhật Duy", "Nguyễn Nhật Duy", "Nguyễn Phạm Linh Đan", "Nguyễn Ngọc Bảo Hân",
-    "Mào Trung Hiếu", "Nguyễn Bá Gia Hưng", "Vừ Gia Hưng", "Vừ Thị Ngọc Linh", "Đỗ Phan Duy Long",
-    "Vừ Thành Long", "Vừ Bảo Ly", "Quàng Thị Quốc Mai", "Vừ Công Minh", "Phạm Bảo Ngọc",
-    "Lò Thảo Nguyên", "Trình Chân Nguyên", "Lò Đức Phong", "Thào Thị Thảo", "Tạ Anh Thư",
-    "Lò Minh Tiến", "Chang Trí Tuệ", "Cà Phương Uyên", "Bùi Uyển Vy"
-  ];
+  const classLists = {
+    "1A3": [
+      "Hà Tâm An", "Vũ Ngọc Khánh An", "Hoàng Diệu Anh", "Quàng Tuấn Anh", "Lê Bảo Châu",
+      "Trịnh Công Dũng", "Bùi Nhật Duy", "Nguyễn Nhật Duy", "Nguyễn Phạm Linh Đan", "Nguyễn Ngọc Bảo Hân",
+      "Mào Trung Hiếu", "Nguyễn Bá Gia Hưng", "Vừ Gia Hưng", "Vừ Thị Ngọc Linh", "Đỗ Phan Duy Long",
+      "Vừ Thành Long", "Vừ Bảo Ly", "Quàng Thị Quốc Mai", "Vừ Công Minh", "Phạm Bảo Ngọc",
+      "Lò Thảo Nguyên", "Trình Chân Nguyên", "Lò Đức Phong", "Thào Thị Thảo", "Tạ Anh Thư",
+      "Lò Minh Tiến", "Chang Trí Tuệ", "Cà Phương Uyên", "Bùi Uyển Vy"
+    ],
+    "1A4": [
+      "Lê Minh Anh", "Phạm Gia Bảo", "Hoàng Ngọc Cát", "Đặng Tuấn Dũng", "Vũ Thị Lan",
+      "Nguyễn Tiến Minh", "Trần Bảo Ngọc", "Lý Gia Hân", "Phan Anh Quân", "Bùi Minh Khôi",
+      "Đỗ Phương Thảo", "Ngô Gia Huy", "Võ Hoàng Yến", "Huỳnh Khánh Linh", "Mai Tuấn Kiệt"
+    ]
+  };
+
+  const studentList = classLists[selectedClass] || [];
 
   // Map student list to data, preferring real user data if name matches
   const students = studentList.map((name, i) => {
@@ -650,6 +661,32 @@ function TeacherDashboard({ progress, users }: { progress: ProgressData, users: 
     ? Math.round((students.filter(s => s.completedCount > 0).length / students.length) * 100) 
     : 0;
 
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+      
+      if (lines.length > 0) {
+        if (confirm(`Tìm thấy ${lines.length} học sinh trong file. Bạn có muốn thêm các học sinh chưa có vào lớp không?`)) {
+          const addedCount = addBulkUsers(lines);
+          alert(`${addedCount} học sinh mới đã được thêm thành công! ${lines.length - addedCount} học sinh đã tồn tại.`);
+        }
+      } else {
+        alert("File không có dữ liệu hoặc định dạng không đúng. Vui lòng sử dụng file CSV với một cột chứa tên học sinh.");
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+    
+    // Reset file input to allow re-uploading the same file
+    if (event.target) {
+      event.target.value = '';
+    }
+  };
+
   const exportToExcel = () => {
     const headers = ["Họ và tên", "Mã học sinh", "Số bài đã học", "Điểm trung bình", "Hoạt động cuối"];
     const csvContent = [
@@ -667,7 +704,7 @@ function TeacherDashboard({ progress, users }: { progress: ProgressData, users: 
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "Danh_sach_lop_1A3.csv");
+    link.setAttribute("download", `Danh_sach_lop_${selectedClass}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -800,8 +837,34 @@ function TeacherDashboard({ progress, users }: { progress: ProgressData, users: 
       
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">Danh sách lớp 1A3</h2>
           <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold text-slate-900">Danh sách lớp</h2>
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              {Object.keys(classLists).map(className => (
+                <button 
+                  key={className}
+                  onClick={() => setSelectedClass(className)}
+                  className={cn("px-3 py-1 rounded-lg text-sm font-bold transition-all", 
+                    selectedClass === className ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:bg-slate-200"
+                  )}
+                >{className}</button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-xl font-bold hover:bg-blue-200 transition-colors"
+            >
+              <Upload size={18} /> Nhập từ Excel
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileImport}
+              accept=".csv, text/csv"
+              className="hidden"
+            />
             <button 
               onClick={exportToExcel}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-200 transition-colors"
