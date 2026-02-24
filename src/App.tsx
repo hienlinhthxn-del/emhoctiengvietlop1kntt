@@ -8,7 +8,7 @@ import { SampleAudioPlayer } from './components/SampleAudioPlayer';
 import { StudentAudioRecorder } from './components/StudentAudioRecorder';
 import { StudentAudioPlayer } from './components/StudentAudioPlayer';
 import { MatchingExercise } from './components/MatchingExercise';
-import { useProgress, useAssignments, ProgressDashboard, type ProgressData, type Assignment } from './services/progressService';
+import { useProgress, useAssignments, ProgressDashboard, type ProgressData, type Assignment, type UserProfile } from './services/progressService';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -268,6 +268,7 @@ export default function App() {
                     role={role}
                     assignLesson={assignLesson}
                     assignments={assignments}
+                    currentUserId={currentUserId}
                   />
                 ) : (
                   <WelcomeBox />
@@ -319,11 +320,11 @@ export default function App() {
                 </div>
                 <div className="lg:col-span-8">
                   <AnimatePresence mode="wait">
-                    {selectedLesson ? <LessonContent lesson={selectedLesson} progress={progress} onFeedback={(f) => { setAiFeedback(f); completeLesson(selectedLesson.id, f.accuracy); }} aiFeedback={aiFeedback} completeLesson={completeLesson} role={role} assignLesson={assignLesson} assignments={assignments} /> : <WelcomeBox />}
+                    {selectedLesson ? <LessonContent lesson={selectedLesson} progress={progress} onFeedback={(f) => { setAiFeedback(f); completeLesson(selectedLesson.id, f.accuracy); }} aiFeedback={aiFeedback} completeLesson={completeLesson} role={role} assignLesson={assignLesson} assignments={assignments} currentUserId={currentUserId} /> : <WelcomeBox />}
                   </AnimatePresence>
                 </div>
               </div>
-            ) : <TeacherDashboard progress={progress} />}
+            ) : <TeacherDashboard progress={progress} users={users} />}
           </>
         )}
         {role === 'parent' && <ParentDashboard progress={progress} />}
@@ -378,9 +379,10 @@ interface LessonContentProps {
   role: Role;
   assignLesson: (id: string, message?: string, dueDate?: string) => void;
   assignments: Assignment[];
+  currentUserId: string;
 }
 
-function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesson, role, assignLesson, assignments }: LessonContentProps) {
+function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesson, role, assignLesson, assignments, currentUserId }: LessonContentProps) {
   const isTeacher = role === 'teacher';
   const isAssigned = assignments.some(a => a.lessonId === lesson.id);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -411,7 +413,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
               {!isTeacher && (
                 <StudentAudioRecorder 
                   expectedText={lesson.content} 
-                  recordingId={`student-${lesson.id}-main`}
+                  recordingId={`student-${currentUserId}-${lesson.id}-main`}
                   onFeedback={(f) => completeLesson(lesson.id, f.accuracy, 'main')}
                 />
               )}
@@ -434,7 +436,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
                   {!isTeacher && (
                     <StudentAudioRecorder 
                       expectedText={ex} 
-                      recordingId={`student-${lesson.id}-ex-${i}`}
+                      recordingId={`student-${currentUserId}-${lesson.id}-ex-${i}`}
                       onFeedback={(f) => completeLesson(lesson.id, f.accuracy, 'example', i)}
                     />
                   )}
@@ -457,7 +459,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
                 {!isTeacher && (
                   <StudentAudioRecorder 
                     expectedText={lesson.passage} 
-                    recordingId={`student-${lesson.id}-passage`}
+                    recordingId={`student-${currentUserId}-${lesson.id}-passage`}
                     onFeedback={(f) => completeLesson(lesson.id, f.accuracy, 'passage')}
                   />
                 )}
@@ -538,7 +540,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
             Array.isArray(lesson.passage) ? lesson.passage.join(' ') : (lesson.passage || lesson.content)
           } 
           onFeedback={onFeedback} 
-          recordingId={`student-${lesson.id}-full`}
+          recordingId={`student-${currentUserId}-${lesson.id}-full`}
         />
         {aiFeedback && <FeedbackBox feedback={aiFeedback} />}
       </div>
@@ -606,27 +608,35 @@ function WelcomeBox() {
   );
 }
 
-function TeacherDashboard({ progress }: { progress: ProgressData }) {
+function TeacherDashboard({ progress, users }: { progress: ProgressData, users: UserProfile[] }) {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
-  const studentList = [
-    "Hà Tâm An", "Vũ Ngọc Khánh An", "Hoàng Diệu Anh", "Quàng Tuấn Anh", "Lê Bảo Châu",
-    "Trịnh Công Dũng", "Bùi Nhật Duy", "Nguyễn Nhật Duy", "Nguyễn Phạm Linh Đan", "Nguyễn Ngọc Bảo Hân",
-    "Mào Trung Hiếu", "Nguyễn Bá Gia Hưng", "Vừ Gia Hưng", "Vừ Thị Ngọc Linh", "Đỗ Phan Duy Long",
-    "Vừ Thành Long", "Vừ Bảo Ly", "Quàng Thị Quốc Mai", "Vừ Công Minh", "Phạm Bảo Ngọc",
-    "Lò Thảo Nguyên", "Trình Chân Nguyên", "Lò Đức Phong", "Thào Thị Thảo", "Tạ Anh Thư",
-    "Lò Minh Tiến", "Chang Trí Tuệ", "Cà Phương Uyên", "Bùi Uyển Vy"
-  ];
+  // Get real student data from localStorage
+  const students = users.map(user => {
+    let userProgress: ProgressData | null = null;
+    try {
+      const saved = localStorage.getItem(`htl1-progress-${user.id}`);
+      if (saved) userProgress = JSON.parse(saved);
+    } catch (e) {}
 
-  // Mock data for students
-  const students = studentList.map((name, i) => ({
-    id: `student-${i + 1}`,
-    name: name,
-    completedCount: Math.floor(Math.random() * 15),
-    avgScore: Math.floor(Math.random() * 30) + 70,
-    lastActive: new Date(Date.now() - Math.floor(Math.random() * 5 * 24 * 60 * 60 * 1000)).toLocaleDateString('vi-VN'),
-    progress: null
-  }));
+    const completedCount = userProgress?.completedLessons?.length || 0;
+    const scores = userProgress ? Object.values(userProgress.scores) : [];
+    const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+    const lastActive = userProgress?.lastActivity ? new Date(userProgress.lastActivity).toLocaleDateString('vi-VN') : 'Chưa học';
+
+    return {
+      id: user.id,
+      name: user.name,
+      completedCount,
+      avgScore,
+      lastActive,
+      progress: userProgress
+    };
+  });
+
+  const participationRate = students.length > 0 
+    ? Math.round((students.filter(s => s.completedCount > 0).length / students.length) * 100) 
+    : 0;
 
   if (selectedStudent) {
     const studentProgress = selectedStudent.progress || {
@@ -698,7 +708,7 @@ function TeacherDashboard({ progress }: { progress: ProgressData }) {
                         {scores.main !== undefined ? (
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-emerald-600">{scores.main}%</span>
-                            <StudentAudioPlayer recordingId={`student-${lessonId}-main`} />
+                            <StudentAudioPlayer recordingId={`student-${selectedStudent.id}-${lessonId}-main`} />
                           </div>
                         ) : <span className="text-slate-300">-</span>}
                       </td>
@@ -708,7 +718,7 @@ function TeacherDashboard({ progress }: { progress: ProgressData }) {
                             {Object.entries(scores.examples).map(([idx, score]: [any, any]) => (
                               <div key={idx} className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-100">
                                 <span className="text-[10px] font-bold text-blue-600">{score}%</span>
-                                <StudentAudioPlayer recordingId={`student-${lessonId}-ex-${idx}`} />
+                                <StudentAudioPlayer recordingId={`student-${selectedStudent.id}-${lessonId}-ex-${idx}`} />
                               </div>
                             ))}
                           </div>
@@ -718,7 +728,7 @@ function TeacherDashboard({ progress }: { progress: ProgressData }) {
                         {scores.passage !== undefined ? (
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-purple-600">{scores.passage}%</span>
-                            <StudentAudioPlayer recordingId={`student-${lessonId}-passage`} />
+                            <StudentAudioPlayer recordingId={`student-${selectedStudent.id}-${lessonId}-passage`} />
                           </div>
                         ) : <span className="text-slate-300">-</span>}
                       </td>
@@ -749,13 +759,13 @@ function TeacherDashboard({ progress }: { progress: ProgressData }) {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard icon={<Users size={24} />} value={students.length.toString()} label="Học sinh" color="emerald" />
-        <StatCard icon={<BarChart3 size={24} />} value="72%" label="Tỷ lệ hoàn thành lớp" color="blue" />
+        <StatCard icon={<BarChart3 size={24} />} value={`${participationRate}%`} label="Tỷ lệ tham gia" color="blue" />
         <StatCard icon={<Settings size={24} />} value={lessons.length.toString()} label="Tổng số bài học" color="purple" />
       </div>
       
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">Bảng tổng hợp lớp 1A</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Danh sách học sinh</h2>
           <div className="text-sm font-bold text-slate-400">Sĩ số: {students.length} học sinh</div>
         </div>
         
