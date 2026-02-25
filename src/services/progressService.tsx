@@ -52,6 +52,38 @@ const INITIAL_BADGES: Badge[] = [
   { id: 'master', name: 'Bậc thầy âm vần', icon: '👑', description: 'Hoàn thành 10 bài học', unlocked: false },
 ];
 
+const DEFAULT_STUDENTS: UserProfile[] = [
+  { id: 'hs01', name: 'Hà Tâm An', classId: '1A3' },
+  { id: 'hs02', name: 'Vũ Ngọc Khánh An', classId: '1A3' },
+  { id: 'hs03', name: 'Hoàng Diệu Anh', classId: '1A3' },
+  { id: 'hs04', name: 'Quàng Tuấn Anh', classId: '1A3' },
+  { id: 'hs05', name: 'Lê Bảo Châu', classId: '1A3' },
+  { id: 'hs06', name: 'Trịnh Công Dũng', classId: '1A3' },
+  { id: 'hs07', name: 'Bùi Nhật Duy', classId: '1A3' },
+  { id: 'hs08', name: 'Nguyễn Nhật Duy', classId: '1A3' },
+  { id: 'hs09', name: 'Nguyễn Phạm Linh Đan', classId: '1A3' },
+  { id: 'hs10', name: 'Nguyễn Ngọc Bảo Hân', classId: '1A3' },
+  { id: 'hs11', name: 'Mào Trung Hiếu', classId: '1A3' },
+  { id: 'hs12', name: 'Nguyễn Bá Gia Hưng', classId: '1A3' },
+  { id: 'hs13', name: 'Vừ Gia Hưng', classId: '1A3' },
+  { id: 'hs14', name: 'Vừ Thị Ngọc Linh', classId: '1A3' },
+  { id: 'hs15', name: 'Đỗ Phan Duy Long', classId: '1A3' },
+  { id: 'hs16', name: 'Vừ Thành Long', classId: '1A3' },
+  { id: 'hs17', name: 'Vừ Bảo Ly', classId: '1A3' },
+  { id: 'hs18', name: 'Quàng Thị Quốc Mai', classId: '1A3' },
+  { id: 'hs19', name: 'Vừ Công Minh', classId: '1A3' },
+  { id: 'hs20', name: 'Phạm Bảo Ngọc', classId: '1A3' },
+  { id: 'hs21', name: 'Lò Thảo Nguyên', classId: '1A3' },
+  { id: 'hs22', name: 'Trình Chân Nguyên', classId: '1A3' },
+  { id: 'hs23', name: 'Lò Đức Phong', classId: '1A3' },
+  { id: 'hs24', name: 'Thào Thị Thảo', classId: '1A3' },
+  { id: 'hs25', name: 'Tạ Anh Thư', classId: '1A3' },
+  { id: 'hs26', name: 'Lò Minh Tiến', classId: '1A3' },
+  { id: 'hs27', name: 'Chang Trí Tuệ', classId: '1A3' },
+  { id: 'hs28', name: 'Cà Phương Uyên', classId: '1A3' },
+  { id: 'hs29', name: 'Bùi Uyển Vy', classId: '1A3' },
+];
+
 export const useProgress = () => {
   // Quản lý danh sách lớp học
   const [classes, setClasses] = useState<ClassGroup[]>(() => {
@@ -68,7 +100,7 @@ export const useProgress = () => {
       const saved = localStorage.getItem('htl1-users');
       if (saved) return JSON.parse(saved);
     } catch (e) { console.error(e); }
-    return [{ id: 'default', name: 'Bé yêu' }];
+    return DEFAULT_STUDENTS;
   });
 
   // ID người dùng hiện tại
