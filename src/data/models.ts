@@ -42,7 +42,30 @@ const UserSchema = new mongoose.Schema({
     status: { type: String, default: 'active' }
 }, { timestamps: true });
 
-export const User = mongoose.models.User || mongoose.model('User', UserSchema);
-export const Progress = mongoose.models.Progress || mongoose.model('Progress', ProgressSchema);
+// Interfaces
+export interface IUser extends mongoose.Document {
+    username: string;
+    password: string;
+    role: string;
+    fullName: string;
+    classId: string;
+    status: string;
+}
+
+export interface IProgress extends mongoose.Document {
+    userId: string;
+    username: string;
+    role: string;
+    completedLessons: string[];
+    scores: Map<string, number>;
+    detailedScores: Map<string, any>;
+    lastActivity: Date;
+    unlockedBadges: string[];
+    points: number;
+    completionDates: Map<string, string>;
+}
+
+export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export const Progress = mongoose.models.Progress || mongoose.model<IProgress>('Progress', ProgressSchema);
 export const Class = mongoose.models.Class || mongoose.model('Class', ClassSchema);
 export const Assignment = mongoose.models.Assignment || mongoose.model('Assignment', AssignmentSchema);
