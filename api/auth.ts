@@ -10,11 +10,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(500).json({ error: 'Lỗi kết nối cơ sở dữ liệu: ' + dbError.message });
     }
 
-    // Auto-seed admin if database is empty
+    // Auto-seed admin and students if database is empty
     try {
         const userCount = await User.countDocuments();
         if (userCount === 0) {
-            console.log('Database empty, seeding admin user...');
+            console.log('Database empty, seeding default data...');
+
+            // Seed Admin
             const admin = new User({
                 username: 'admin',
                 password: 'admin123',
@@ -23,7 +25,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 classId: '1A3'
             });
             await admin.save();
-            console.log('Admin user seeded successfully');
+
+            // Seed 29 default students from class 1A3
+            const defaultStudentNames = [
+                'Hà Tâm An', 'Vũ Ngọc Khánh An', 'Hoàng Diệu Anh', 'Quàng Tuấn Anh', 'Lê Bảo Châu',
+                'Trịnh Công Dũng', 'Bùi Nhật Duy', 'Nguyễn Nhật Duy', 'Nguyễn Phạm Linh Đan', 'Nguyễn Ngọc Bảo Hân',
+                'Mào Trung Hiếu', 'Nguyễn Bá Gia Hưng', 'Vừ Gia Hưng', 'Vừ Thị Ngọc Linh', 'Đỗ Phan Duy Long',
+                'Vừ Thành Long', 'Vừ Bảo Ly', 'Quàng Thị Quốc Mai', 'Vừ Công Minh', 'Phạm Bảo Ngọc',
+                'Lò Thảo Nguyên', 'Trình Chân Nguyên', 'Lò Đức Phong', 'Thào Thị Thảo', 'Tạ Anh Thư',
+                'Lò Minh Tiến', 'Chang Trí Tuệ', 'Cà Phương Uyên', 'Bùi Uyển Vy'
+            ];
+
+            const studentPromises = defaultStudentNames.map((name, index) => {
+                const id = `hs${(index + 1).toString().padStart(2, '0')}`;
+                return new User({
+                    username: id,
+                    password: '', // Học sinh không cần mật khẩu
+                    role: 'student',
+                    fullName: name,
+                    classId: '1A3'
+                }).save();
+            });
+
+            await Promise.all(studentPromises);
+            console.log('Seeding completed: Admin + 29 Students');
         }
     } catch (seedError) {
         console.error('Seeding error:', seedError);
