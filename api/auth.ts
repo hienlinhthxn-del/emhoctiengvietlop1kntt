@@ -1,23 +1,40 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../src/services/mongodb';
-import { User } from '../src/data/models';
+import dbConnect from '../src/services/mongodb.js';
+import { User } from '../src/data/models.js';
 
+/**
+ * Endpoint xử lý Xác thực (Authentication) trên Vercel:
+ * - POST /api/auth (action: login, register)
+ * - GET /api/auth?seed=1 (Khởi tạo dữ liệu mẫu)
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // 1. Test endpoint
-    if (req.query.test) return res.status(200).json({ status: 'Server is running', time: new Date().toISOString() });
+    // 0. Thêm test param để kiểm tra server có phản hồi nhanh không
+    if (req.query.test) {
+        return res.status(200).json({
+            status: 'ok',
+            message: 'Serverless function is reachable',
+            time: new Date().toISOString()
+        });
+    }
 
+    // 1. Kết nối DB
     try {
         await dbConnect();
     } catch (dbError: any) {
-        console.error('Database connection error:', dbError);
-        return res.status(500).json({ error: 'DB_CONNECTION_ERROR', details: dbError.message });
+        console.error('API Error: DB Connection failed', dbError.message);
+        return res.status(500).json({
+            success: false,
+            error: 'Lỗi kết nối CSDL (DB_CONNECTION_ERROR)',
+            details: dbError.message
+        });
     }
 
-    // 2. Manual Seed trigger (Visit: /api/auth?seed=1)
+    // 2. Trigger tạo dữ liệu mẫu (Truy cập: /api/auth?seed=1)
     if (req.query.seed) {
         try {
             const adminExists = await User.findOne({ username: 'admin' });
             if (!adminExists) {
+                // Tạo admin
                 const admin = new User({
                     username: 'admin',
                     password: 'admin123',
@@ -27,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 });
                 await admin.save();
 
-                // Seed default students
+                // Tạo danh sách học sinh mặc định
                 const defaultStudentNames = [
                     'Hà Tâm An', 'Vũ Ngọc Khánh An', 'Hoàng Diệu Anh', 'Quàng Tuấn Anh', 'Lê Bảo Châu',
                     'Trịnh Công Dũng', 'Bùi Nhật Duy', 'Nguyễn Nhật Duy', 'Nguyễn Phạm Linh Đan', 'Nguyễn Ngọc Bảo Hân',
@@ -46,43 +63,59 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }));
 
                 await User.insertMany(studentsData);
-                return res.status(200).json({ message: 'Admin and Students created successfully' });
+                return res.status(200).json({ success: true, message: 'Admin and Students seeded successfully' });
             }
-            return res.status(200).json({ message: 'Data already exists' });
+            return res.status(200).json({ status: 'info', message: 'Data already exists' });
         } catch (e: any) {
-            console.error('Seed error:', e);
+            console.error('API Error: Seeding failed', e.message);
             return res.status(500).json({ error: 'SEED_ERROR', details: e.message });
         }
     }
 
+    // 3. Xử lý POST (Login / Register)
     if (req.method === 'POST') {
-        const { action, username, password, fullName, role, classId } = req.body;
+        const { action, username, password, fullName, role, classId } = req.body || {};
+
+        if (!action) {
+            return res.status(400).json({ error: 'Missing action (login/register)' });
+        }
 
         if (action === 'register') {
             try {
+                if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+
                 const existing = await User.findOne({ username });
                 if (existing) return res.status(400).json({ error: 'Tài khoản đã tồn tại' });
 
                 const newUser = new User({
                     username,
-                    password,
-                    fullName,
+                    password, // Trong thực tế nên được mã hóa (bcrypt)
+                    fullName: fullName || 'Học sinh mới',
                     role: role || 'student',
                     classId: classId || '1A3'
                 });
 
                 await newUser.save();
-                return res.status(201).json({ success: true });
+                return res.status(201).json({ success: true, message: 'Đăng ký thành công' });
             } catch (error: any) {
-                console.error('Register error:', error);
+                console.error('API Error: Register failed', error.message);
                 return res.status(500).json({ error: 'REGISTER_ERROR', details: error.message });
             }
         }
 
         if (action === 'login') {
             try {
-                const user = await User.findOne({ username, password });
-                if (!user) return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
+                if (!username) return res.status(400).json({ error: 'Vui lòng nhập tên đăng nhập' });
+
+                // Lưu ý: HS đăng nhập không có mật khẩu (password='')
+                const user = await User.findOne({
+                    username: username,
+                    password: password || ''
+                });
+
+                if (!user) {
+                    return res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không chính xác' });
+                }
 
                 return res.status(200).json({
                     success: true,
@@ -95,27 +128,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     }
                 });
             } catch (error: any) {
-                console.error('Login error:', error);
-                return res.status(500).json({ error: 'LOGIN_ERROR', details: error.message });
+                console.error('API Error: Login failed', error.message);
+                return res.status(500).json({
+                    error: 'LOGIN_ERROR',
+                    details: error.message
+                });
             }
         }
     }
 
-    if (req.method === 'GET') {
-        const { classId } = req.query;
-        try {
-            const students = await User.find({ classId, role: 'student' }).limit(50);
-            return res.status(200).json(students.map((s: any) => ({
-                id: s._id,
-                fullName: s.fullName,
-                username: s.username,
-                role: s.role
-            })));
-        } catch (error: any) {
-            console.error('Fetch students error:', error);
-            return res.status(500).json({ error: 'FETCH_STUDENTS_ERROR', details: error.message });
-        }
-    }
-
-    res.status(405).json({ error: 'Method not allowed' });
+    // Mặc định trả về 405 nếu method khác không được hỗ trợ ở đây
+    res.setHeader('Allow', ['POST', 'GET']);
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
 }
