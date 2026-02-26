@@ -98,7 +98,15 @@ export const useProgress = () => {
   const [users, setUsers] = useState<UserProfile[]>(() => {
     try {
       const saved = localStorage.getItem('htl1-users');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Nếu danh sách chỉ có "Bé yêu" hoặc "default", hoặc số lượng học sinh ít hơn danh sách mẫu mới
+        // thì tự động nạp lại danh sách DEFAULT_STUDENTS mới của giáo viên.
+        if (parsed.length <= 1 || (parsed.length < DEFAULT_STUDENTS.length && parsed[0]?.id === 'default')) {
+          return DEFAULT_STUDENTS;
+        }
+        return parsed;
+      }
     } catch (e) { console.error(e); }
     return DEFAULT_STUDENTS;
   });
@@ -364,7 +372,16 @@ export const useProgress = () => {
     setUsers(prev => prev.map(u => u.id === currentUserId ? { ...u, name } : u));
   };
 
-  return { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser, addBulkUsers, classes, addClass };
+  const resetToDefault = () => {
+    if (confirm("Bạn có chắc chắn muốn làm mới danh sách học sinh về mặc định không? Dữ liệu tiến độ cũ có thể bị ảnh hưởng.")) {
+      setUsers(DEFAULT_STUDENTS);
+      localStorage.removeItem('htl1-users');
+      alert("Đã đặt lại danh sách học sinh mặc định thành công!");
+      window.location.reload();
+    }
+  };
+
+  return { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser, addBulkUsers, classes, addClass, resetToDefault };
 };
 
 export const useAssignments = () => {

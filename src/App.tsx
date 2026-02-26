@@ -24,7 +24,7 @@ export default function App() {
   const [teacherView, setTeacherView] = useState<'lessons' | 'dashboard'>('lessons');
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [aiFeedback, setAiFeedback] = useState<{ transcription: string; feedback: string; accuracy: number } | null>(null);
-  const { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser, addBulkUsers, classes, addClass } = useProgress();
+  const { progress, completeLesson, setUsername, users, currentUserId, addUser, switchUser, deleteUser, addBulkUsers, classes, addClass, resetToDefault } = useProgress();
   const [showSettings, setShowSettings] = useState(false);
   const [newUsername, setNewUsername] = useState(progress.username);
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -32,7 +32,7 @@ export default function App() {
   const { assignments, assignLesson } = useAssignments();
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const filteredLessons = lessons.filter(l => 
+  const filteredLessons = lessons.filter(l =>
     activeTab === 'tap1' ? l.book === 1 : l.book === 2
   );
 
@@ -64,7 +64,7 @@ export default function App() {
           {/* Notification Bell for Student and Parent */}
           {(role === 'student' || role === 'parent') && (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 hover:bg-orange-50 rounded-xl text-orange-600 transition-colors relative"
               >
@@ -75,11 +75,11 @@ export default function App() {
                   </span>
                 )}
               </button>
-              
+
               <AnimatePresence>
                 {showNotifications && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-orange-100 p-4 z-50">
-                    <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2"><Bell size={16} className="text-orange-500"/> Thông báo từ giáo viên</h3>
+                    <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2"><Bell size={16} className="text-orange-500" /> Thông báo từ giáo viên</h3>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {assignments.length === 0 ? <p className="text-sm text-slate-400 italic">Chưa có thông báo mới.</p> : assignments.map(a => {
                         const l = lessons.find(ls => ls.id === a.lessonId);
@@ -101,9 +101,9 @@ export default function App() {
               <Trophy size={20} className="text-indigo-500" />
             </div>
           )}
-          
+
           {role === 'student' && (
-            <button 
+            <button
               onClick={() => setShowSettings(true)}
               className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 transition-colors relative group"
             >
@@ -113,7 +113,7 @@ export default function App() {
           )}
 
           <div className="flex items-center gap-3">
-            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg", 
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg",
               role === 'student' ? "bg-blue-500" : role === 'teacher' ? "bg-emerald-500" : "bg-orange-500")}>
               {role === 'student' ? <Baby size={24} /> : role === 'teacher' ? <GraduationCap size={24} /> : <Users size={24} />}
             </div>
@@ -142,20 +142,20 @@ export default function App() {
                   <h2 className="text-2xl font-black text-slate-900">Quản lý tài khoản</h2>
                   <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400">✕</button>
                 </div>
-                
+
                 <div className="space-y-6">
                   {/* Đổi tên user hiện tại */}
                   <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
                     <label className="block text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Đang học: {progress.username}</label>
                     <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        value={newUsername} 
+                      <input
+                        type="text"
+                        value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
                         className="flex-1 px-4 py-2 bg-white border border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-indigo-900"
                         placeholder="Đổi tên..."
                       />
-                      <button 
+                      <button
                         onClick={() => { setUsername(newUsername); alert("Đã đổi tên thành công!"); }}
                         className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
                       >
@@ -168,7 +168,7 @@ export default function App() {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="font-bold text-slate-700">Danh sách học sinh</h3>
-                      <button 
+                      <button
                         onClick={() => setIsAddingUser(!isAddingUser)}
                         className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
                       >
@@ -178,15 +178,15 @@ export default function App() {
 
                     {isAddingUser && (
                       <div className="mb-4 flex gap-2 animate-in fade-in slide-in-from-top-2">
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           value={newProfileName}
                           onChange={(e) => setNewProfileName(e.target.value)}
                           className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                           placeholder="Tên học sinh mới..."
                           autoFocus
                         />
-                        <button 
+                        <button
                           onClick={() => {
                             if (newProfileName.trim()) {
                               addUser(newProfileName.trim());
@@ -203,13 +203,13 @@ export default function App() {
 
                     <div className="space-y-2">
                       {users.map(user => (
-                        <div key={user.id} className={cn("flex items-center justify-between p-3 rounded-xl border transition-all", 
+                        <div key={user.id} className={cn("flex items-center justify-between p-3 rounded-xl border transition-all",
                           user.id === currentUserId ? "bg-indigo-50 border-indigo-200 shadow-sm" : "bg-white border-slate-100 hover:border-indigo-200")}>
-                          <button 
+                          <button
                             onClick={() => switchUser(user.id)}
                             className="flex items-center gap-3 flex-1 text-left"
                           >
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold", 
+                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
                               user.id === currentUserId ? "bg-indigo-500 text-white" : "bg-slate-100 text-slate-500")}>
                               {user.name[0].toUpperCase()}
                             </div>
@@ -217,10 +217,10 @@ export default function App() {
                               {user.name} {user.id === currentUserId && "(Em)"}
                             </span>
                           </button>
-                          
+
                           {users.length > 1 && (
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); if(confirm(`Xóa học sinh ${user.name}?`)) deleteUser(user.id); }}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); if (confirm(`Xóa học sinh ${user.name}?`)) deleteUser(user.id); }}
                               className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                             >
                               <Trash2 size={16} />
@@ -261,12 +261,12 @@ export default function App() {
             <div className="lg:col-span-8">
               <AnimatePresence mode="wait">
                 {selectedLesson ? (
-                  <LessonContent 
-                    lesson={selectedLesson} 
-                    progress={progress} 
-                    onFeedback={(f) => { setAiFeedback(f); completeLesson(selectedLesson.id, f.accuracy); }} 
-                    aiFeedback={aiFeedback} 
-                    completeLesson={completeLesson} 
+                  <LessonContent
+                    lesson={selectedLesson}
+                    progress={progress}
+                    onFeedback={(f) => { setAiFeedback(f); completeLesson(selectedLesson.id, f.accuracy); }}
+                    aiFeedback={aiFeedback}
+                    completeLesson={completeLesson}
                     role={role}
                     assignLesson={assignLesson}
                     assignments={assignments}
@@ -326,7 +326,7 @@ export default function App() {
                   </AnimatePresence>
                 </div>
               </div>
-            ) : <TeacherDashboard progress={progress} users={users} addBulkUsers={addBulkUsers} classes={classes} onAddClass={addClass} />}
+            ) : <TeacherDashboard progress={progress} users={users} addBulkUsers={addBulkUsers} classes={classes} onAddClass={addClass} onReset={resetToDefault} />}
           </>
         )}
         {role === 'parent' && <ParentDashboard progress={progress} />}
@@ -348,7 +348,7 @@ function RoleCard({ icon, title, desc, color, onClick, locked }: RoleCardProps) 
   return (
     <motion.button whileHover={{ y: -8 }} onClick={onClick} className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col items-center text-center group relative">
       {locked && <div className="absolute top-6 right-6 text-slate-300"><Lock size={20} /></div>}
-      <div className={cn("w-24 h-24 rounded-full flex items-center justify-center mb-8 group-hover:scale-110 transition-transform", 
+      <div className={cn("w-24 h-24 rounded-full flex items-center justify-center mb-8 group-hover:scale-110 transition-transform",
         color === 'blue' ? "bg-blue-50 text-blue-500" : color === 'emerald' ? "bg-emerald-50 text-emerald-500" : "bg-orange-50 text-orange-500")}>
         {icon}
       </div>
@@ -406,15 +406,15 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
             <div className="text-8xl md:text-9xl font-black text-orange-600 drop-shadow-sm">{lesson.content}</div>
             <p className="mt-4 text-orange-900/50 font-medium italic mb-6">Hãy cùng đọc to nhé!</p>
             <div className="flex items-center gap-3">
-              <SampleAudioPlayer 
-                text={lesson.content} 
-                label="Nghe mẫu âm/vần" 
+              <SampleAudioPlayer
+                text={lesson.content}
+                label="Nghe mẫu âm/vần"
                 recordingId={`${lesson.id}-main`}
                 isTeacher={isTeacher}
               />
               {!isTeacher && (
-                <StudentAudioRecorder 
-                  expectedText={lesson.content} 
+                <StudentAudioRecorder
+                  expectedText={lesson.content}
                   recordingId={`student-${currentUserId}-${lesson.id}-main`}
                   onFeedback={(f) => completeLesson(lesson.id, f.accuracy, 'main')}
                 />
@@ -422,22 +422,22 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
             </div>
           </div>
         )}
-        
+
         {lesson.examples.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {lesson.examples.map((ex: string, i: number) => (
               <div key={i} className="bg-white border border-orange-100 p-4 rounded-2xl flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-shadow">
                 <span className="text-2xl font-bold text-orange-800">{ex}</span>
                 <div className="flex flex-col items-center gap-2">
-                  <SampleAudioPlayer 
-                    text={ex} 
-                    label="Nghe" 
+                  <SampleAudioPlayer
+                    text={ex}
+                    label="Nghe"
                     recordingId={`${lesson.id}-ex-${i}`}
                     isTeacher={isTeacher}
                   />
                   {!isTeacher && (
-                    <StudentAudioRecorder 
-                      expectedText={ex} 
+                    <StudentAudioRecorder
+                      expectedText={ex}
                       recordingId={`student-${currentUserId}-${lesson.id}-ex-${i}`}
                       onFeedback={(f) => completeLesson(lesson.id, f.accuracy, 'example', i)}
                     />
@@ -447,20 +447,20 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
             ))}
           </div>
         )}
-        
+
         {lesson.passage && (
           <div className="p-8 bg-white border-2 border-orange-100 rounded-3xl shadow-inner">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-orange-400 uppercase tracking-widest">Đoạn văn luyện đọc</h3>
               <div className="flex items-center gap-3">
-                <SampleAudioPlayer 
-                  text={lesson.passage} 
+                <SampleAudioPlayer
+                  text={lesson.passage}
                   recordingId={`${lesson.id}-passage`}
                   isTeacher={isTeacher}
                 />
                 {!isTeacher && (
-                  <StudentAudioRecorder 
-                    expectedText={lesson.passage} 
+                  <StudentAudioRecorder
+                    expectedText={lesson.passage}
                     recordingId={`student-${currentUserId}-${lesson.id}-passage`}
                     onFeedback={(f) => completeLesson(lesson.id, f.accuracy, 'passage')}
                   />
@@ -478,7 +478,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
             </div>
           </div>
         )}
-        
+
         {lesson.exercise && (
           <div className="mt-8">
             {lesson.exercise.type === 'word-builder' && <WordBuilder word={lesson.exercise.data.word} parts={lesson.exercise.data.parts} onComplete={(score) => completeLesson(lesson.id, score)} />}
@@ -486,7 +486,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
             {lesson.exercise.type === 'matching' && <MatchingExercise data={lesson.exercise.data} onComplete={(score) => completeLesson(lesson.id, score)} />}
           </div>
         )}
-        
+
         {lesson.quiz && (
           <div className="mt-12 p-8 bg-white border-2 border-orange-100 rounded-[2rem]">
             <h3 className="text-xl font-bold text-orange-900 mb-6">Bài tập trắc nghiệm</h3>
@@ -519,7 +519,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
                 Em hãy tìm 3 đồ vật trong nhà có tên chứa âm <span className="text-2xl font-black text-orange-500 mx-1">{lesson.content}</span>
               </p>
             </div>
-            
+
             {lesson.examples.length > 0 && (
               <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -534,14 +534,14 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
           </div>
         </div>
       </div>
-      
+
       <div className="mt-12 pt-12 border-t border-orange-100">
         <h3 className="text-xl font-bold text-orange-900 mb-6">Luyện đọc toàn bài</h3>
-        <StudentAudioRecorder 
+        <StudentAudioRecorder
           expectedText={
             Array.isArray(lesson.passage) ? lesson.passage.join(' ') : (lesson.passage || lesson.content)
-          } 
-          onFeedback={onFeedback} 
+          }
+          onFeedback={onFeedback}
           recordingId={`student-${currentUserId}-${lesson.id}-full`}
         />
         {aiFeedback && <FeedbackBox feedback={aiFeedback} />}
@@ -549,7 +549,7 @@ function LessonContent({ lesson, progress, onFeedback, aiFeedback, completeLesso
 
       <AnimatePresence>
         {showAssignModal && (
-          <AssignmentModal 
+          <AssignmentModal
             onClose={() => setShowAssignModal(false)}
             onConfirm={(msg, date) => {
               assignLesson(lesson.id, msg, date);
@@ -610,7 +610,7 @@ function WelcomeBox() {
   );
 }
 
-function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }: { progress: ProgressData, users: UserProfile[], addBulkUsers: (names: string[], classId: string) => number, classes: ClassGroup[], onAddClass: (name: string) => void }) {
+function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass, onReset }: { progress: ProgressData, users: UserProfile[], addBulkUsers: (names: string[], classId: string) => number, classes: ClassGroup[], onAddClass: (name: string) => void, onReset?: () => void }) {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [selectedClassId, setSelectedClassId] = useState(classes[0]?.id || '');
@@ -627,7 +627,7 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
     try {
       const saved = localStorage.getItem(`htl1-progress-${userId}`);
       if (saved) userProgress = JSON.parse(saved);
-    } catch (e) {}
+    } catch (e) { }
 
     const completedCount = userProgress?.completedLessons?.length || 0;
     const scores = userProgress ? Object.values(userProgress.scores) : [];
@@ -644,8 +644,8 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
     };
   });
 
-  const participationRate = students.length > 0 
-    ? Math.round((students.filter(s => s.completedCount > 0).length / students.length) * 100) 
+  const participationRate = students.length > 0
+    ? Math.round((students.filter(s => s.completedCount > 0).length / students.length) * 100)
     : 0;
 
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -656,7 +656,7 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-      
+
       if (lines.length > 0) {
         if (confirm(`Tìm thấy ${lines.length} học sinh trong file. Bạn có muốn thêm các học sinh chưa có vào lớp không?`)) {
           const addedCount = addBulkUsers(lines, selectedClassId);
@@ -667,7 +667,7 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
       }
     };
     reader.readAsText(file, 'UTF-8');
-    
+
     // Reset file input to allow re-uploading the same file
     if (event.target) {
       event.target.value = '';
@@ -716,7 +716,7 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
 
     return (
       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-8">
-        <button 
+        <button
           onClick={() => setSelectedStudent(null)}
           className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold transition-colors"
         >
@@ -830,24 +830,24 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
         <StatCard icon={<BarChart3 size={24} />} value={`${participationRate}%`} label="Tỷ lệ tham gia" color="blue" />
         <StatCard icon={<Settings size={24} />} value={lessons.length.toString()} label="Tổng số bài học" color="purple" />
       </div>
-      
+
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold text-slate-900">Danh sách lớp</h2>
             <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
               {classes.map(cls => (
-                <button 
+                <button
                   key={cls.id}
                   onClick={() => setSelectedClassId(cls.id)}
-                  className={cn("px-3 py-1 rounded-lg text-sm font-bold transition-all", 
+                  className={cn("px-3 py-1 rounded-lg text-sm font-bold transition-all",
                     selectedClassId === cls.id ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:bg-slate-200"
                   )}
                 >{cls.name}</button>
               ))}
               <button onClick={() => setIsAddingClass(true)} className="px-3 py-1 rounded-lg text-sm font-bold text-emerald-600 hover:bg-emerald-100 transition-all"><Plus size={16} /></button>
             </div>
-            
+
             {/* Add Class Modal/Input */}
             {isAddingClass && (
               <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" onClick={() => setIsAddingClass(false)}>
@@ -859,7 +859,7 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
             )}
           </div>
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-xl font-bold hover:bg-blue-200 transition-colors"
             >
@@ -872,16 +872,24 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
               accept=".csv, text/csv"
               className="hidden"
             />
-            <button 
+            <button
               onClick={exportToExcel}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-200 transition-colors"
             >
               <Download size={18} /> Xuất Excel
             </button>
+            {onReset && (
+              <button
+                onClick={onReset}
+                className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition-colors"
+              >
+                <Trash2 size={18} /> Làm mới DS
+              </button>
+            )}
             <div className="text-sm font-bold text-slate-400">Sĩ số: {students.length} học sinh</div>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -907,8 +915,8 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
                   <td className="py-4">
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-emerald-500 transition-all" 
+                        <div
+                          className="h-full bg-emerald-500 transition-all"
                           style={{ width: `${(student.completedCount / lessons.length) * 100}%` }}
                         />
                       </div>
@@ -918,8 +926,8 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
                   <td className="py-4">
                     <span className={cn(
                       "px-3 py-1 rounded-full text-xs font-bold",
-                      student.avgScore >= 80 ? "bg-emerald-100 text-emerald-700" : 
-                      student.avgScore >= 50 ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"
+                      student.avgScore >= 80 ? "bg-emerald-100 text-emerald-700" :
+                        student.avgScore >= 50 ? "bg-orange-100 text-orange-700" : "bg-red-100 text-red-700"
                     )}>
                       {student.avgScore}%
                     </span>
@@ -928,7 +936,7 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
                     <span className="text-sm text-slate-500 font-medium">{student.lastActive}</span>
                   </td>
                   <td className="py-4 text-right">
-                    <button 
+                    <button
                       onClick={() => setSelectedStudent(student)}
                       className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-900 hover:text-white transition-all"
                     >
@@ -947,13 +955,13 @@ function TeacherDashboard({ progress, users, addBulkUsers, classes, onAddClass }
 
 function ParentDashboard({ progress }: { progress: ProgressData }) {
   const { assignments } = useAssignments();
-  
+
   // Tính toán dữ liệu cho biểu đồ tuần
   const getWeeklyStats = () => {
     const stats = [];
     const now = new Date();
     const dates = progress.completionDates || {};
-    
+
     // Lấy ngày thứ 2 của tuần hiện tại
     const currentDay = now.getDay() || 7; // CN là 0 -> đổi thành 7
     const monday = new Date(now);
@@ -964,7 +972,7 @@ function ParentDashboard({ progress }: { progress: ProgressData }) {
     for (let i = 3; i >= 0; i--) {
       const weekStart = new Date(monday);
       weekStart.setDate(monday.getDate() - (i * 7));
-      
+
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
       weekEnd.setHours(23, 59, 59, 999);
@@ -984,7 +992,7 @@ function ParentDashboard({ progress }: { progress: ProgressData }) {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <h2 className="text-3xl font-black text-orange-900">Tiến độ học tập của con</h2>
       <ProgressDashboard progress={progress} />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <WeeklyProgressChart data={getWeeklyStats()} />
 
@@ -1001,9 +1009,9 @@ function ParentDashboard({ progress }: { progress: ProgressData }) {
                   <div key={a.id} className={cn("p-4 rounded-2xl border flex items-start justify-between gap-4", isCompleted ? "bg-green-50 border-green-100" : "bg-white border-red-100")}>
                     <div>
                       <div className="font-bold text-slate-900">{lesson?.title}</div>
-                      <div className="text-xs text-slate-500 flex items-center gap-1"><Calendar size={12}/> {new Date(a.timestamp).toLocaleDateString('vi-VN')}</div>
+                      <div className="text-xs text-slate-500 flex items-center gap-1"><Calendar size={12} /> {new Date(a.timestamp).toLocaleDateString('vi-VN')}</div>
                       <div className="text-sm text-slate-700 mt-2 italic bg-white/50 p-2 rounded-lg border border-slate-100">"{a.message}"</div>
-                      {a.dueDate && <div className="text-xs text-red-500 font-bold mt-2 flex items-center gap-1"><Calendar size={12}/> Hạn nộp: {new Date(a.dueDate).toLocaleDateString('vi-VN')}</div>}
+                      {a.dueDate && <div className="text-xs text-red-500 font-bold mt-2 flex items-center gap-1"><Calendar size={12} /> Hạn nộp: {new Date(a.dueDate).toLocaleDateString('vi-VN')}</div>}
                     </div>
                     <div className={cn("px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap", isCompleted ? "bg-green-200 text-green-800" : "bg-red-100 text-red-600")}>
                       {isCompleted ? "Đã xong" : "Chưa làm"}
@@ -1015,21 +1023,21 @@ function ParentDashboard({ progress }: { progress: ProgressData }) {
           </div>
         </div>
 
-      <div className="bg-white p-8 rounded-[2.5rem] border border-orange-50 shadow-sm">
-        <h3 className="text-xl font-bold text-orange-900 mb-6">Bài học đã hoàn thành</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {progress.completedLessons.map((id: string) => {
-            const lesson = lessons.find(l => l.id === id);
-            return (
-              <div key={id} className="flex items-center justify-between p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                <div className="font-bold text-orange-900">{lesson?.title || id}</div>
-                <div className="text-sm font-black text-orange-600">{progress.scores[id] || 0}%</div>
-              </div>
-            );
-          })}
-          {progress.completedLessons.length === 0 && <div className="col-span-2 text-center py-12 text-gray-400 italic">Con chưa hoàn thành bài học nào.</div>}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-orange-50 shadow-sm">
+          <h3 className="text-xl font-bold text-orange-900 mb-6">Bài học đã hoàn thành</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {progress.completedLessons.map((id: string) => {
+              const lesson = lessons.find(l => l.id === id);
+              return (
+                <div key={id} className="flex items-center justify-between p-4 bg-orange-50 rounded-2xl border border-orange-100">
+                  <div className="font-bold text-orange-900">{lesson?.title || id}</div>
+                  <div className="text-sm font-black text-orange-600">{progress.scores[id] || 0}%</div>
+                </div>
+              );
+            })}
+            {progress.completedLessons.length === 0 && <div className="col-span-2 text-center py-12 text-gray-400 italic">Con chưa hoàn thành bài học nào.</div>}
+          </div>
         </div>
-      </div>
       </div>
     </motion.div>
   );
@@ -1047,15 +1055,15 @@ function WeeklyProgressChart({ data }: { data: { label: string; count: number }[
         {data.map((item, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-3 group h-full justify-end">
             <div className="relative w-full flex justify-center items-end h-full bg-indigo-50/30 rounded-2xl overflow-hidden">
-               <motion.div 
-                 initial={{ height: 0 }}
-                 animate={{ height: `${(item.count / max) * 100}%` }}
-                 className="w-full max-w-[40px] bg-indigo-500 rounded-t-xl relative group-hover:bg-indigo-600 transition-colors min-h-[4px]"
-               >
-                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                   {item.count} bài
-                 </div>
-               </motion.div>
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${(item.count / max) * 100}%` }}
+                className="w-full max-w-[40px] bg-indigo-500 rounded-t-xl relative group-hover:bg-indigo-600 transition-colors min-h-[4px]"
+              >
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                  {item.count} bài
+                </div>
+              </motion.div>
             </div>
             <div className="text-xs font-bold text-slate-400 text-center whitespace-nowrap">{item.label}</div>
           </div>
@@ -1076,12 +1084,12 @@ function AssignmentModal({ onClose, onConfirm }: { onClose: () => void, onConfir
           <h3 className="text-xl font-black text-slate-900">Giao bài tập về nhà</h3>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"><X size={20} /></button>
         </div>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Lời nhắn của giáo viên</label>
-            <textarea 
-              value={message} 
+            <textarea
+              value={message}
               onChange={e => setMessage(e.target.value)}
               className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-700 resize-none"
               rows={3}
@@ -1091,8 +1099,8 @@ function AssignmentModal({ onClose, onConfirm }: { onClose: () => void, onConfir
 
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hạn nộp bài (Tùy chọn)</label>
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={dueDate}
               onChange={e => setDueDate(e.target.value)}
               className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700"
@@ -1112,7 +1120,7 @@ function AssignmentModal({ onClose, onConfirm }: { onClose: () => void, onConfir
 function StatCard({ icon, value, label, color }: any) {
   return (
     <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-4", 
+      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-4",
         color === 'emerald' ? "bg-emerald-50 text-emerald-600" : color === 'blue' ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600")}>
         {icon}
       </div>
