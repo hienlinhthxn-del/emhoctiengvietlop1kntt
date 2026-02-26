@@ -65,7 +65,7 @@ export interface IProgress extends mongoose.Document {
     completionDates: Map<string, string>;
 }
 
-export const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
-export const Progress = mongoose.models.Progress || mongoose.model<IProgress>('Progress', ProgressSchema);
-export const Class = mongoose.models.Class || mongoose.model('Class', ClassSchema);
-export const Assignment = mongoose.models.Assignment || mongoose.model('Assignment', AssignmentSchema);
+export const User: mongoose.Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export const Progress: mongoose.Model<IProgress> = mongoose.models.Progress || mongoose.model<IProgress>('Progress', ProgressSchema);
+export const Class: mongoose.Model<any> = mongoose.models.Class || mongoose.model('Class', ClassSchema);
+export const Assignment: mongoose.Model<any> = mongoose.models.Assignment || mongoose.model('Assignment', AssignmentSchema);
