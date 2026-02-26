@@ -35,7 +35,7 @@ const AssignmentSchema = new mongoose.Schema({
 // Schema cho Người dùng (Authentication)
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }, // Nên được hash
+    password: { type: String, required: false, default: '' }, // Cho phép trống để HS đăng nhập nhanh
     role: { type: String, enum: ['student', 'teacher', 'parent', 'admin'], default: 'student' },
     fullName: String,
     classId: String,

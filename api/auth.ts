@@ -32,10 +32,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 2. Trigger tạo dữ liệu mẫu (Truy cập: /api/auth?seed=1)
     if (req.query.seed) {
         try {
-            const adminExists = await User.findOne({ username: 'admin' });
-            if (!adminExists) {
-                // Tạo admin
-                const admin = new User({
+            const results: any = {};
+
+            // 2.1 Tạo Admin nếu chưa có
+            let admin = await User.findOne({ username: 'admin' });
+            if (!admin) {
+                admin = new User({
                     username: 'admin',
                     password: 'admin123',
                     role: 'teacher',
@@ -43,8 +45,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     classId: '1A3'
                 });
                 await admin.save();
+                results.admin = 'created';
+            } else {
+                results.admin = 'exists';
+            }
 
-                // Tạo danh sách học sinh mặc định
+            // 2.2 Tạo Phụ huynh mẫu nếu chưa có
+            let parent = await User.findOne({ username: 'parent' });
+            if (!parent) {
+                parent = new User({
+                    username: 'parent',
+                    password: '123456',
+                    role: 'parent',
+                    fullName: 'Phụ Huynh Mẫu',
+                    classId: '1A3'
+                });
+                await parent.save();
+                results.parent = 'created';
+            } else {
+                results.parent = 'exists';
+            }
+
+            // 2.3 Tạo danh sách học sinh mặc định nếu chưa có ai
+            const studentCount = await User.countDocuments({ role: 'student' });
+            if (studentCount === 0) {
                 const defaultStudentNames = [
                     'Hà Tâm An', 'Vũ Ngọc Khánh An', 'Hoàng Diệu Anh', 'Quàng Tuấn Anh', 'Lê Bảo Châu',
                     'Trịnh Công Dũng', 'Bùi Nhật Duy', 'Nguyễn Nhật Duy', 'Nguyễn Phạm Linh Đan', 'Nguyễn Ngọc Bảo Hân',
@@ -63,9 +87,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }));
 
                 await User.insertMany(studentsData);
-                return res.status(200).json({ success: true, message: 'Admin and Students seeded successfully' });
+                results.students = `created ${studentsData.length} students`;
+            } else {
+                results.students = `exists (${studentCount} students)`;
             }
-            return res.status(200).json({ status: 'info', message: 'Data already exists' });
+
+            return res.status(200).json({ success: true, results });
         } catch (e: any) {
             console.error('API Error: Seeding failed', e.message);
             return res.status(500).json({ error: 'SEED_ERROR', details: e.message });
