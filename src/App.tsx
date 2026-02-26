@@ -229,6 +229,17 @@ export default function App() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Nút Cập nhật danh sách mẫu cho HS */}
+                    <div className="mt-6 pt-6 border-t border-slate-100">
+                      <button
+                        onClick={resetToDefault}
+                        className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-bold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Sparkles size={18} className="text-red-500" /> Cập nhật danh sách lớp từ hệ thống
+                      </button>
+                      <p className="text-[10px] text-slate-400 mt-2 text-center italic">Sử dụng nút này nếu em không thấy tên mình trong danh sách.</p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
