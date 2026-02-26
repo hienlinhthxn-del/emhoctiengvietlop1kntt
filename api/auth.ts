@@ -36,18 +36,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'Lò Minh Tiến', 'Chang Trí Tuệ', 'Cà Phương Uyên', 'Bùi Uyển Vy'
             ];
 
-            const studentPromises = defaultStudentNames.map((name, index) => {
-                const id = `hs${(index + 1).toString().padStart(2, '0')}`;
-                return new User({
-                    username: id,
-                    password: '', // Học sinh không cần mật khẩu
-                    role: 'student',
-                    fullName: name,
-                    classId: '1A3'
-                }).save();
-            });
+            const studentsData = defaultStudentNames.map((name, index) => ({
+                username: `hs${(index + 1).toString().padStart(2, '0')}`,
+                password: '',
+                role: 'student',
+                fullName: name,
+                classId: '1A3'
+            }));
 
-            await Promise.all(studentPromises);
+            await User.insertMany(studentsData);
             console.log('Seeding completed: Admin + 29 Students');
         }
     } catch (seedError) {
