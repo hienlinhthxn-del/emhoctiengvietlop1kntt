@@ -2,11 +2,6 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
- */
 let cached = (global as any).mongoose;
 
 if (!cached) {
@@ -25,7 +20,8 @@ async function dbConnect() {
     if (!cached.promise) {
         const opts = {
             bufferCommands: false,
-            dbName: 'tieng-viet-1'
+            dbName: 'tieng-viet-1',
+            connectTimeoutMS: 10000, // 10 giây
         };
 
         cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
