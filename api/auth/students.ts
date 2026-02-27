@@ -3,6 +3,16 @@ import dbConnect from '../../../src/services/mongodb.js';
 import { User } from '../../../src/data/models.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+    // Thêm headers CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
     if (req.method !== 'GET') {
         res.setHeader('Allow', ['GET']);
         return res.status(405).json({ error: `Method ${req.method} not allowed` });
